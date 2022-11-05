@@ -7,20 +7,20 @@ import os
 import shutil
 import datetime
 
-SOURCEDIR = 'H:\\13.09.18'
-DEST_DIR = 'H:\\DEST'
-#file count
+
+#vars for printing operations
 files = 0
-#folder count
 folders = 0
 duplicates = 0
+
 USER = os.environ['USERPROFILE']
-global root_ext, f_month, f_year, f_size
+
+#extracting metadata in separate functions so they can be referenced in OPTIONS_TO_DATA
 
 def file_extension(entry):
-        #extract file extension
-        root_ext = os.path.splitext(entry)[1]
-        return root_ext
+    #extract file extension
+    root_ext = os.path.splitext(entry)[1]
+    return root_ext
 
 def file_year(entry):
     #extract creation time
@@ -51,7 +51,7 @@ def file_size(entry):
         f_size = "Over 100 MB"
     return f_size
 
-
+#possible button options
 SORT_OPTIONS = {1 : "None",
                 2 : "Year",
                 3 : "Month",
@@ -59,11 +59,13 @@ SORT_OPTIONS = {1 : "None",
                 5 : "Size",
 }
 
+#current button values, these change
 SORT_BUTTONS = {"sort_order_1" : 2,
                 "sort_order_2" : 1,
                 "sort_order_3" : 1,
 } 
 
+#text displayed on the button translates to function called
 OPTIONS_TO_DATA = {"None" : "",
                    "Year" : file_year,
                   "Month" : file_month,
@@ -79,40 +81,17 @@ def folder_recursive_check(sourcedir, destdir, sort_order_1, sort_order_2, sort_
         for entry in entries:
             #if entry is a file
             if os.path.isfile(entry):
-                '''
-                #extract file extension
-                f_extension = file_extension(entry)
-                
-                #extract creation time
-                c_time = os.path.getmtime(entry)
-                #transform epoch time to date
-                dt_c = datetime.datetime.fromtimestamp(c_time)
-                #reformat time to full month format
-                f_month = dt_c.strftime("%B")
-                #reformat time to YYYY format
-                f_year = dt_c.strftime("%Y")
-                
-                #extract file size
-                f_size = os.path.getsize(entry)
-                #convert size to MB
-                f_size = int(f_size/(1024*1024))
-                if f_size <= 100:
-                    f_size = "Up to 100 MB"
-                else:
-                    f_size = "Over 100 MB"
-                '''
                 #get file name
                 file_name = entry.name
-                #create directory path: destinationfolder\extension\date               
+                #create directory path: destination folder\sort button 1\sort button 2\sort button 3              
                 fin_path = os.path.join(destdir, sort_order_1(entry), sort_order_2(entry), sort_order_3(entry))
-                #create directory path: destinationfolder\extension\date\filename
+                #create directory path: destination folder\sort button 1\sort button 2\sort button 3\file name
                 fin_file_path = os.path.join(fin_path, file_name)
-                
                 #if destination directory doesn't exist create directory and copy file
                 if not os.path.exists(fin_path):
                     os.makedirs(fin_path)
                     shutil.copy(entry.path, fin_path)
-                #if file already relacated print information about duplicate
+                #if file already copied print information about duplicate
                 elif os.path.exists(fin_file_path):
                     duplicates += 1
                     print(f"{entry.name} already copied, duplicate count {duplicates}")
@@ -127,12 +106,7 @@ def folder_recursive_check(sourcedir, destdir, sort_order_1, sort_order_2, sort_
                 folders +=1
                 print(f"folder {folders} copied")
 
-
-
-
-
-#folder_recursive_check(SOURCEDIR)
-
+#constructor class for UI
 class Ui_Dialog(QDialog):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
@@ -151,6 +125,7 @@ class Ui_Dialog(QDialog):
         font.setWeight(50)
         self.Confirm_button.setFont(font)
         self.Confirm_button.setObjectName("Confirm_button")
+        #connect submit button to class method which calls main function
         self.Confirm_button.clicked.connect(self.run_sort)
         self.label1 = QtWidgets.QLabel(Dialog)
         self.label1.setGeometry(QtCore.QRect(10, 20, 171, 31))
@@ -161,22 +136,25 @@ class Ui_Dialog(QDialog):
         self.destination_text_field_expand = QtWidgets.QToolButton(Dialog)
         self.destination_text_field_expand.setGeometry(QtCore.QRect(330, 140, 31, 22))
         self.destination_text_field_expand.setObjectName("destination_text_field_expand")
-        self.destination_text_field_expand.clicked.connect(self.browsefiles_dest)
+        self.destination_text_field_expand.clicked.connect(self.browsefiles)
         self.source_text_field_expand = QtWidgets.QToolButton(Dialog)
         self.source_text_field_expand.setGeometry(QtCore.QRect(330, 60, 31, 22))
         self.source_text_field_expand.setObjectName("source_text_field_expand")
-        self.source_text_field_expand.clicked.connect(self.browsefiles_source)
+        self.source_text_field_expand.clicked.connect(self.browsefiles)
         self.sort_order_1 = QtWidgets.QPushButton(Dialog)
         self.sort_order_1.setGeometry(QtCore.QRect(20, 220, 91, 31))
         self.sort_order_1.setObjectName("sort_order_1")
+        #connect sort button to change sort method
         self.sort_order_1.clicked.connect(self.change_sort)
         self.sort_order_2 = QtWidgets.QPushButton(Dialog)
         self.sort_order_2.setGeometry(QtCore.QRect(140, 220, 91, 31))
         self.sort_order_2.setObjectName("sort_order_2")
+        #connect sort button to change sort method
         self.sort_order_2.clicked.connect(self.change_sort)
         self.sort_order_3 = QtWidgets.QPushButton(Dialog)
         self.sort_order_3.setGeometry(QtCore.QRect(260, 220, 91, 31))
         self.sort_order_3.setObjectName("sort_order_3")
+        #connect sort button to change sort method
         self.sort_order_3.clicked.connect(self.change_sort)
         self.label2_2 = QtWidgets.QLabel(Dialog)
         self.label2_2.setGeometry(QtCore.QRect(10, 180, 171, 31))
@@ -191,22 +169,24 @@ class Ui_Dialog(QDialog):
         Dialog.setTabOrder(self.sort_order_1, self.sort_order_2)
         Dialog.setTabOrder(self.sort_order_2, self.sort_order_3)
         Dialog.setTabOrder(self.sort_order_3, self.Confirm_button)
-
-    def browsefiles_source(self):
+    #open Windows filebrowser
+    def browsefiles(self):
         filepath = QFileDialog.getExistingDirectory(self, "Open File", f"C:\\Users\\{USER}\\Desktop")
-        self.source_text_field.setText(filepath)
-
-    def browsefiles_dest(self):
-        filepath = QFileDialog.getExistingDirectory(self, "Open File", f"C:\\Users\\{USER}\\Desktop")
-        self.destination_text_field.setText(filepath)
-
+        btn = self.sender()
+        if btn.objectName() == "source_text_field_expand":
+            self.source_text_field.setText(filepath)
+        elif btn.objectName() == "destination_text_field_expand":
+            self.destination_text_field.setText(filepath)
+        else:
+            print("program go brrrr")
+    #call main function
     def run_sort(self):
         folder_recursive_check(self.source_text_field.text(), 
         self.destination_text_field.text(),
         OPTIONS_TO_DATA[SORT_OPTIONS[SORT_BUTTONS["sort_order_1"]]], 
         OPTIONS_TO_DATA[SORT_OPTIONS[SORT_BUTTONS["sort_order_2"]]], 
         OPTIONS_TO_DATA[SORT_OPTIONS[SORT_BUTTONS["sort_order_3"]]] )
-
+    #sorting format is changed on-click; this is for all 3 buttons
     def change_sort(self):
         btn = self.sender()
         btn_name = btn.objectName()
@@ -224,7 +204,7 @@ class Ui_Dialog(QDialog):
             print(OPTIONS_TO_DATA[SORT_OPTIONS[SORT_BUTTONS[btn_name]]])
 
 
-
+    #idk
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "File Sorter"))
@@ -238,7 +218,7 @@ class Ui_Dialog(QDialog):
         self.sort_order_3.setText(_translate("Dialog", "None"))
         self.label2_2.setText(_translate("Dialog", "Sort order"))
 
-
+#run program
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -247,10 +227,3 @@ if __name__ == "__main__":
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
-
-
-
-#locate file
-#check type
-#create type folder/move to ve to type folder
-#check date/move to date folder

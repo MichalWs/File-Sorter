@@ -1,24 +1,20 @@
-
-
 from multiprocessing.reduction import duplicate
 import os
 import shutil
 import datetime
 
-
-
-
-SOURCEDIR = 'H:\\13.09.18'
+#hardcoded paths
+SOURCE_DIR = 'H:\\13.09.18'
 DEST_DIR = 'H:\\DEST'
-#file count
+#vars for printing operations
 files = 0
-#folder count
 folders = 0
 duplicates = 0
+
 USER = os.environ['USERPROFILE']
 
 
-
+#main function
 def folder_recursive_check(sourcedir):
     with os.scandir(sourcedir) as entries:
         global files, folders, duplicates
@@ -42,9 +38,10 @@ def folder_recursive_check(sourcedir):
                 fin_file_path = os.path.join(fin_path, file_name)
                 #if destination directory doesn't exist create directory and copy file
                 if not os.path.exists(fin_path):
+                    #create directory tree
                     os.makedirs(fin_path)
                     shutil.copy(entry.path, fin_path)
-                #if file already relacated print information about duplicate
+                #if file already copied print information about duplicate
                 elif os.path.exists(fin_file_path):
                     print(f"{entry.name} already copied, duplicate count {duplicates}")
                     duplicates += 1
@@ -53,9 +50,11 @@ def folder_recursive_check(sourcedir):
                     shutil.copy(entry.path, fin_path)
                 files +=1
                 print(f"file {files} copied")
+            #recurive check for folders inside the source folder
             else:
                 folder_recursive_check(entry.path)
                 folders +=1
                 print(f"folder {folders} copied")
 
-folder_recursive_check(SOURCEDIR)
+#call function
+folder_recursive_check(SOURCE_DIR)
